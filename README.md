@@ -29,9 +29,10 @@ This is a Python script that lets you export your Twitter Bookmarks, including a
 ## Usage
 
 ```
-usage: twitter_archiver.py [-h] [--no-html]
+usage: twitter_archiver.py [-h] [--no-html] [--timeline]
 
 optional arguments:
   -h, --help  show this help message and exit
   --no-html   Disable HTML output
+  --timeline  Fetch timeline instead of bookmarks
 ```
