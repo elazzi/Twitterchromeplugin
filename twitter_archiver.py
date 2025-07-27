@@ -68,6 +68,15 @@ def get_bookmarks(session):
     bookmarks = client.get_bookmarks(expansions=["author_id", "attachments.media_keys"], media_fields=["url", "preview_image_url", "variants"])
     return bookmarks
 
+def get_timeline(session):
+    """
+    Fetches the user's "following" timeline.
+    """
+    client = tweepy.Client(session.token["access_token"])
+    user = client.get_me()
+    timeline = client.get_users_tweets(user.data.id, max_results=100, expansions=["author_id", "attachments.media_keys"], media_fields=["url", "preview_image_url", "variants"])
+    return timeline
+
 def to_dict(obj):
     """
     Converts a tweepy object to a dictionary.
@@ -150,30 +159,36 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--no-html", action="store_true", help="Disable HTML output")
+    parser.add_argument("--timeline", action="store_true", help="Fetch timeline instead of bookmarks")
     args = parser.parse_args()
 
     session = login()
-    bookmarks = get_bookmarks(session)
+    if args.timeline:
+        data = get_timeline(session)
+        filename = "timeline.json"
+    else:
+        data = get_bookmarks(session)
+        filename = "all_bookmarks.json"
 
-    all_bookmarks = []
-    if os.path.exists("all_bookmarks.json"):
-        with open("all_bookmarks.json", "r") as f:
-            all_bookmarks = json.load(f)
+    all_data = []
+    if os.path.exists(filename):
+        with open(filename, "r") as f:
+            all_data = json.load(f)
 
-    if not all_bookmarks:
-        if bookmarks and bookmarks.data:
-            for tweet in bookmarks.data:
-                media = bookmarks.includes.get("media", [])
-                author = bookmarks.includes.get("users", [])
+    if not all_data:
+        if data and data.data:
+            for tweet in data.data:
+                media = data.includes.get("media", [])
+                author = data.includes.get("users", [])
                 bm = {
                     "tweet": to_dict(tweet),
                     "media": to_dict(media),
                     "author": to_dict(author),
                 }
-                all_bookmarks.append(bm)
-            with open("all_bookmarks.json", "w") as f:
-                json.dump(all_bookmarks, f, indent=2)
+                all_data.append(bm)
+            with open(filename, "w") as f:
+                json.dump(all_data, f, indent=2)
 
-    asyncio.run(download_media(all_bookmarks))
+    asyncio.run(download_media(all_data))
     if not args.no_html:
-        generate_html(all_bookmarks)
+        generate_html(all_data)
