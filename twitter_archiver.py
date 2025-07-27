@@ -112,7 +112,7 @@ async def download_file(session, url):
     Downloads a single file.
     """
     u = urlparse(url)
-    filename = os.path.join(u.netloc, u.path[1:])
+    filename = os.path.join("media", os.path.basename(u.path))
     if os.path.exists(filename):
         return
     os.makedirs(os.path.dirname(filename), exist_ok=True)
@@ -122,7 +122,36 @@ async def download_file(session, url):
             f.write(await response.read())
     print(f"Done {url}")
 
+def generate_html(all_bookmarks):
+    """
+    Generates an HTML file with the tweets and media.
+    """
+    with open("index.html", "w") as f:
+        f.write("<html><head><title>Twitter Bookmarks</title></head><body>")
+        for bm in all_bookmarks:
+            tweet = bm.get("tweet", {})
+            author = bm.get("author", {})
+            media = bm.get("media", [])
+            f.write(f"<div>")
+            f.write(f"<p><b>{author.get('name')}</b> (@{author.get('username')})</p>")
+            f.write(f"<p>{tweet.get('text')}</p>")
+            for m in media:
+                if m.get("type") == "photo":
+                    f.write(f"<img src='media/{os.path.basename(m.get('url'))}'>")
+                elif m.get("type") in ["video", "animated_gif"]:
+                    variants = m.get("variants", [])
+                    variants.sort(key=lambda x: x.get("bit_rate", 0), reverse=True)
+                    if variants:
+                        f.write(f"<video controls><source src='media/{os.path.basename(variants[0].get('url'))}' type='video/mp4'></video>")
+            f.write("</div><hr>")
+        f.write("</body></html>")
+
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--no-html", action="store_true", help="Disable HTML output")
+    args = parser.parse_args()
+
     session = login()
     bookmarks = get_bookmarks(session)
 
@@ -146,3 +175,5 @@ if __name__ == "__main__":
                 json.dump(all_bookmarks, f, indent=2)
 
     asyncio.run(download_media(all_bookmarks))
+    if not args.no_html:
+        generate_html(all_bookmarks)
