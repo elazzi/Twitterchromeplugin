@@ -1,5 +1,6 @@
 import os
 import json
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 import time
 import tweepy
 import aiohttp
