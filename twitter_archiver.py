@@ -5,17 +5,11 @@ import tweepy
 import aiohttp
 import asyncio
 from urllib.parse import urlparse
-import pkce
-from requests_oauthlib import OAuth2Session
+import tweepy
 
 # Your client credentials
 client_id = os.environ.get("TWITTER_CLIENT_ID")
 client_secret = os.environ.get("TWITTER_CLIENT_SECRET")
-
-# OAuth 2.0 endpoints
-authorization_endpoint = "https://twitter.com/i/oauth2/authorize"
-token_endpoint = "https://api.twitter.com/2/oauth2/token"
-redirect_uri = "http://localhost:3000"
 
 # Scopes
 scopes = ["bookmark.read", "users.read", "tweet.read"]
@@ -29,50 +23,42 @@ def login():
             auth_data = json.load(f)
             # Check if the token is expired
             if auth_data.get("expiry") > time.time() + 5 * 60:
-                return OAuth2Session(client_id, token=auth_data)
+                return tweepy.Client(auth_data["access_token"])
 
-    oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=scopes)
-    # Create a code verifier
-    code_verifier, code_challenge = pkce.generate_pkce_pair()
-
-    authorization_url, state = oauth.authorization_url(
-        authorization_endpoint,
-        code_challenge=code_challenge,
-        code_challenge_method="S256",
+    oauth2_user_handler = tweepy.OAuth2UserHandler(
+        client_id=client_id,
+        redirect_uri="http://localhost:3000",
+        scope=scopes,
+        client_secret=client_secret,
     )
 
-    print(f"Please go here and authorize: {authorization_url}")
+    print(f"Please go here and authorize: {oauth2_user_handler.get_authorization_url()}")
 
     # Get the authorization verifier code from the callback url
     redirect_response = input("Paste the full redirect URL here: ")
 
     # Fetch the access token
-    token = oauth.fetch_token(
-        token_endpoint,
-        authorization_response=redirect_response,
-        code_verifier=code_verifier,
-        client_secret=client_secret,
-    )
+    response = oauth2_user_handler.fetch_token(redirect_response)
+    access_token = response["access_token"]
 
     # Save the token
     with open(".auth", "w") as f:
-        json.dump(token, f)
+        response["expiry"] = time.time() + response["expires_in"]
+        json.dump(response, f)
 
-    return oauth
+    return tweepy.Client(access_token)
 
-def get_bookmarks(session):
+def get_bookmarks(client):
     """
     Fetches the user's bookmarks.
     """
-    client = tweepy.Client(session.token["access_token"])
     bookmarks = client.get_bookmarks(expansions=["author_id", "attachments.media_keys"], media_fields=["url", "preview_image_url", "variants"])
     return bookmarks
 
-def get_timeline(session):
+def get_timeline(client):
     """
     Fetches the user's "following" timeline.
     """
-    client = tweepy.Client(session.token["access_token"])
     user = client.get_me()
     timeline = client.get_users_tweets(user.data.id, max_results=100, expansions=["author_id", "attachments.media_keys"], media_fields=["url", "preview_image_url", "variants"])
     return timeline
@@ -162,12 +148,12 @@ if __name__ == "__main__":
     parser.add_argument("--timeline", action="store_true", help="Fetch timeline instead of bookmarks")
     args = parser.parse_args()
 
-    session = login()
+    client = login()
     if args.timeline:
-        data = get_timeline(session)
+        data = get_timeline(client)
         filename = "timeline.json"
     else:
-        data = get_bookmarks(session)
+        data = get_bookmarks(client)
         filename = "all_bookmarks.json"
 
     all_data = []
