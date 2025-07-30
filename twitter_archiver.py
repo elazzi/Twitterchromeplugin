@@ -92,11 +92,11 @@ async def download_media(all_bookmarks):
                 if variants:
                     download_list.add(variants[0].get("url"))
                 download_list.add(media.get("preview_image_url"))
-            # Check if author is a list and access the first element if it exists
-            author = bm.get("author", [])
-            if isinstance(author, list) and author:
+        # Check if author is a list and access the first element if it exists
+        author = bm.get("author", [])
+        if isinstance(author, list) and author:
                 author = author[0]  # Take the first author if the list is not empty
-            else:
+        else:
                 author = {}  # Assign an empty dictionary if author is not a list or is empty
 
         if author:
@@ -128,10 +128,12 @@ def generate_html(all_bookmarks):
     """
     Generates an HTML file with the tweets and media, one tweet per page.
     """
+    filename = f"tweet_index.html"
+    with open(filename, "a", encoding="utf-8") as f:
+        f.write("<html><head><title>Twitter Bookmark</title></head><body>")
     for i, bm in enumerate(all_bookmarks):
-        filename = f"tweet_{i + 1}.html"
-        with open(filename, "w", encoding="utf-8") as f:
-            f.write("<html><head><title>Twitter Bookmark</title></head><body>")
+        
+
 
             tweet = bm.get("tweet", {})
             media = bm.get("media", [])
@@ -141,14 +143,22 @@ def generate_html(all_bookmarks):
                 author = author[0]  # Take the first author if the list is not empty
             else:
                 author = {}  # Assign an empty dictionary if author is not a list or is empty
-
+            
             f.write(f"<div>")
             f.write(f"<p><b>{author.get('name', 'N/A')}</b> (@{author.get('username', 'N/A')})</p>") # added default values to avoid errors
             f.write(f"<p>{tweet.get('text')}</p>")
+
+            print(f"Tweet: {tweet}")  # Debug print
+            if tweet:
+                print(f"Tweet Attachments: {tweet.get('attachments')}")
+                if tweet.get('attachments'):
+                    print(f"Media Keys: {tweet.get('attachments').get('media_keys')}")
+            
+            media_keys = tweet.get('attachments', {}).get('media_keys', [])
             for m in media:
-                if m.get("type") == "photo":
+                if m.get("type") == "photo" and m.get("media_key") in media_keys:
                     f.write(f"<img src='media/{os.path.basename(m.get('url'))}'>")
-                elif m.get("type") in ["video", "animated_gif"]:
+                elif m.get("type") in ["video", "animated_gif"] and m.get("media_key") in media_keys:
                     variants = m.get("variants", [])
                     variants.sort(key=lambda x: x.get("bit_rate", 0), reverse=True)
                     if variants:
@@ -183,8 +193,17 @@ if __name__ == "__main__":
     if not all_data:
         if data and data.data:
             for tweet in data.data:
-                media = data.includes.get("media", [])
-                author = data.includes.get("users", [])
+                attachments = tweet.get('attachments')
+                if attachments:
+                    tweet_media_keys = attachments.get('media_keys', [])
+                else:
+                    tweet_media_keys = []
+                
+                media = [m for m in data.includes.get("media", []) if m.get('media_key') in tweet_media_keys]
+                
+                author_ids = [tweet.author_id] if tweet.author_id else []
+                author = [user for user in data.includes.get("users", []) if user.id in author_ids]
+
                 bm = {
                     "tweet": to_dict(tweet),
                     "media": to_dict(media),

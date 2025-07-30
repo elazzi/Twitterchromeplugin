@@ -6,3 +6,5 @@ timeline.json
 # Ignore Python cache files
 __pycache__/
 index.html
+tweet_index.html
+.vscode/launch.json
