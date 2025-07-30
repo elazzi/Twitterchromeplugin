@@ -1,5 +1,6 @@
 import os
 import json
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 import time
 import tweepy
 import aiohttp
@@ -125,7 +126,7 @@ async def download_file(session, url):
 
 def generate_html(all_bookmarks):
     """
-    Generates an HTML file with the tweets and media.
+    Generates an HTML file with the tweets and media, one tweet per page.
     """
     filename = f"tweet_index.html"
     with open(filename, "a", encoding="utf-8") as f:
@@ -135,7 +136,6 @@ def generate_html(all_bookmarks):
 
 
             tweet = bm.get("tweet", {})
-            author = bm.get("author", {})
             media = bm.get("media", [])
             # Check if author is a list and access the first element if it exists
             author = bm.get("author", [])
@@ -145,7 +145,7 @@ def generate_html(all_bookmarks):
                 author = {}  # Assign an empty dictionary if author is not a list or is empty
             
             f.write(f"<div>")
-            f.write(f"<p><b>{author.get('name')}</b> (@{author.get('username')})</p>")
+            f.write(f"<p><b>{author.get('name', 'N/A')}</b> (@{author.get('username', 'N/A')})</p>") # added default values to avoid errors
             f.write(f"<p>{tweet.get('text')}</p>")
 
             print(f"Tweet: {tweet}")  # Debug print
@@ -164,7 +164,7 @@ def generate_html(all_bookmarks):
                     if variants:
                         f.write(f"<video controls><source src='media/{os.path.basename(variants[0].get('url'))}' type='video/mp4'></video>")
             f.write("</div><hr>")
-        f.write("</body></html>")
+            f.write("</body></html>")
 
 if __name__ == "__main__":
     import argparse
@@ -173,19 +173,23 @@ if __name__ == "__main__":
     parser.add_argument("--timeline", action="store_true", help="Fetch timeline instead of bookmarks")
     args = parser.parse_args()
 
-    client = login()
     if args.timeline:
-        data = get_timeline(client)
         filename = "timeline.json"
     else:
-        data = get_bookmarks(client)
         filename = "all_bookmarks.json"
 
     all_data = []
     if os.path.exists(filename):
         with open(filename, "r") as f:
             all_data = json.load(f)
-
+    else:
+        client = login()
+        if args.timeline:
+            data = get_timeline(client)
+            filename = "timeline.json"
+        else:
+            data = get_bookmarks(client)
+            filename = "all_bookmarks.json"
     if not all_data:
         if data and data.data:
             for tweet in data.data:
