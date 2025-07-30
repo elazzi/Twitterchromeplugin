@@ -1,7 +1,7 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'archive') {
-    const tweets = [];
-    document.querySelectorAll('article').forEach((tweetElement) => {
+  if (request.action === 'downloadTweet') {
+    const tweetElement = document.querySelector('article');
+    if (tweetElement) {
       const media = [];
       tweetElement.querySelectorAll('img').forEach((img) => {
         media.push(img.src);
@@ -13,8 +13,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         text: tweetElement.innerText,
         media: media,
       };
-      tweets.push(tweet);
-    });
-    chrome.runtime.sendMessage({ action: 'archiveData', data: tweets });
+      chrome.runtime.sendMessage({ action: 'tweetData', data: tweet });
+    }
   }
 });

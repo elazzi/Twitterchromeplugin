@@ -1,8 +1,0 @@
-.env
-.auth
-all_bookmarks.json
-media
-timeline.json
-# Ignore Python cache files
-__pycache__/
-index.html

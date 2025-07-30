@@ -1,17 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Twitter Bookmark Archiver</title>
+  <title>Twitter Media Downloader</title>
   <style>
     body {
-      width: 200px;
+      width: 300px;
       text-align: center;
+    }
+    textarea {
+      width: 90%;
+      height: 100px;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
-  <h1>Twitter Bookmark Archiver</h1>
-  <button id="archiveButton">Archive Bookmarks</button>
+  <h1>Twitter Media Downloader</h1>
+  <textarea id="tweetUrl" placeholder="Enter tweet URL..."></textarea>
+  <button id="downloadButton">Download</button>
   <script src="popup.js"></script>
 </body>
 </html>
