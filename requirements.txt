@@ -1,4 +1,0 @@
-tweepy
-requests-oauthlib
-aiohttp
-pkce
