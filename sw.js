@@ -28877,16 +28877,9 @@
           clientVersion: xo(),
           hostName: "api.webext.prod.mediaharvest.app",
           region: "ap-northeast-1",
-          credentials: async () =>
-            (await ko.get()).mapBy(
-              ds(
-                "accessKeyId",
-                "expiration",
-                "sessionToken",
-                "identityId",
-                "secretAccessKey"
-              )
-            ),
+          credentials: async () => {
+            throw new Error("Cognito disabled");
+          },
         }),
         Io = new wo({ timeout: 1e4 }),
         Oo = new (class {
@@ -31028,6 +31021,7 @@
         },
         tu = /^https:\/\/(www\.)?x\.com\//,
         ru = s();
+      /*
       (() => {
         const e = new vt({
           dsn: "https://40df3cc6025d4968a6275f3aa1a6bbee@o1169684.ingest.sentry.io/6263910",
@@ -31048,6 +31042,7 @@
         });
         se().setClient(e), e.init();
       })();
+      */
       const nu = s();
       ((e) => {
         const t = e ?? s(),
