@@ -26899,22 +26899,6 @@
         get syncToken() {
           return this.props.syncToken;
         }
-        get uninstallUrl() {
-          return ((e, t) => {
-            if (!e.startsWith("/"))
-              throw new Error(`path should starts with \`/\`. (path: ${e})`);
-            const r = new URL(e, "https://api.webext.prod.mediaharvest.app");
-            return (
-              t &&
-                Object.entries(t).forEach(([e, t]) =>
-                  r.searchParams.set(e, String(t))
-                ),
-              r
-            );
-          })("/v1/clients/" + this.id.value + "/uninstall", {
-            uninstallCode: this.props.uninstallCode,
-          }).href;
-        }
         get shouldSync() {
           return Date.now() - this.props.syncedAt >= zn;
         }
@@ -31243,18 +31227,7 @@
         cs().runtime.onMessage.addListener(
           (e, t, r) => (su.handle({ message: e, sender: t, response: r }), !0)
         ),
-        cs().runtime.onInstalled.addListener(
-          ((iu = nu),
-          async (e) => {
-            if ("browser_update" === e.reason) return;
-            const t = xo();
-            "install" === e.reason && (await iu.publish(new ja(t))),
-              "update" === e.reason &&
-                (await iu.publish(
-                  new Ma({ current: t, previous: e?.previousVersion ?? t })
-                ));
-          })
-        ),
+        cs().runtime.onStartup.addListener(ac(To)),
         cs().downloads.onChanged.addListener(
           ((e, t, r) => async (n) => {
             const { state: s } = n;
