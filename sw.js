@@ -2372,9 +2372,26 @@
                 t.push({ schemeId: "smithy.api#noAuth" });
                 break;
               default:
+<<<<<<< HEAD
 
                     t.push({ schemeId: "smithy.api#noAuth" });
                 
+=======
+                t.push(
+                  (function (e) {
+                    return {
+                      schemeId: "aws.auth#sigv4",
+                      signingProperties: {
+                        name: "cognito-identity",
+                        region: e.region,
+                      },
+                      propertiesExtractor: (e, t) => ({
+                        signingProperties: { config: e, context: t },
+                      }),
+                    };
+                  })(e)
+                );
+>>>>>>> 819d91ae90b672aa838866dba6b862a078a87e91
             }
             return t;
           },
@@ -26888,7 +26905,10 @@
         get syncToken() {
           return this.props.syncToken;
         }
+<<<<<<< HEAD
         
+=======
+>>>>>>> 819d91ae90b672aa838866dba6b862a078a87e91
         get shouldSync() {
           return Date.now() - this.props.syncedAt >= zn;
         }
@@ -28851,9 +28871,14 @@
           clientVersion: xo(),
           hostName: "api.webext.prod.mediaharvest.app",
           region: "ap-northeast-1",
+<<<<<<< HEAD
           credentials: async () =>{
             //throw new Error("Cognito disabled");
             return null;
+=======
+          credentials: async () => {
+            throw new Error("Cognito disabled");
+>>>>>>> 819d91ae90b672aa838866dba6b862a078a87e91
           },
         }),
         Io = new wo({ timeout: 1e4 }),
@@ -30996,7 +31021,32 @@
         },
         tu = /^https:\/\/(www\.)?x\.com\//,
         ru = s();
+<<<<<<< HEAD
       
+=======
+      /*
+      (() => {
+        const e = new vt({
+          dsn: "https://40df3cc6025d4968a6275f3aa1a6bbee@o1169684.ingest.sentry.io/6263910",
+          tracesSampleRate: 0.3,
+          environment: "production",
+          release: "twitter-media-harvest(chrome)@4.4.3",
+          ignoreErrors: [
+            "Failed to fetch",
+            "network error",
+            "Download canceled by the user",
+            "intermediate value",
+          ],
+          integrations: [At({ handled: !0, levels: ["error"] })],
+          transport: $t,
+          stackParser: Nt,
+          attachStacktrace: !0,
+          sendClientReports: !0,
+        });
+        se().setClient(e), e.init();
+      })();
+      */
+>>>>>>> 819d91ae90b672aa838866dba6b862a078a87e91
       const nu = s();
       ((e) => {
         const t = e ?? s(),
@@ -31035,7 +31085,11 @@
             if (i) return i;
             await r.publishAll(...n.events);
           });
+<<<<<<< HEAD
           //n && console.error(n);
+=======
+          n && console.error(n);
+>>>>>>> 819d91ae90b672aa838866dba6b862a078a87e91
         })(To);
         var l, d;
         const f =

@@ -5,5 +5,9 @@ media
 timeline.json
 # Ignore Python cache files
 __pycache__/
+<<<<<<< HEAD
+=======
+index.html
+>>>>>>> 819d91ae90b672aa838866dba6b862a078a87e91
 tweet_index.html
 .vscode/launch.json
